@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Analysis Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .half-width {
+            flex: 1;
+            max-width: 48%;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* 限制 JSON 區域的大小 */
+        #results {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* UML 圖片區域 */
+        #umlImage {
+            border: 1px solid #000;
+            max-width: 100%;
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📂 Upload Code</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file" style="display: none;">
+        <button type="button" onclick="document.getElementById('fileInput').click()">📁 Select File</button>
+        <span id="fileNameDisplay" style="margin: 0 10px; font-weight: bold;"></span>
+        <button type="submit">📤 Upload</button>
+    </form>
+
+    <div class="container">
+        <!-- 分析結果 -->
+        <div class="card half-width">
+            <h2>📊 Analysis Results</h2>
+            <button onclick="fetchResults()">🔍 Show Results</button>
+            <pre id="results">Waiting for analysis results...</pre>
+        </div>
+
+        <!-- UML 圖 -->
+        <div class="card half-width">
+            <h2>🖼️ UML Diagram</h2>
+            <label for="umlType" style="font-weight: bold; margin-right: 8px;">UML Diagram Type:</label>
+            <select id="umlType">
+            <option value="sequence">Sequence Diagram</option>
+            <option value="class">Class Diagram</option>
+            </select>
+            <br><br>
+            <button onclick="generateUML()">⚙️ Generate UML</button>
+            <button onclick="downloadUML()">📥 Download Diagram</button>
+            <button onclick="downloadPUML()">📝 Download PUML.file</button>
+            <img id="umlImage" src="" alt="UML images will be displayed here">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("fileInput").addEventListener("change", function () {
+            const file = this.files[0];
+            document.getElementById("fileNameDisplay").textContent = file ? file.name : "";
+        });
+
+        document.getElementById("uploadForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const fileInput = document.getElementById("fileInput").files[0];
+
+            if (!fileInput) {
+                alert("❌ Please select at least one file before uploading！");
+                return;
+            }
+
+            formData.append("file", fileInput);
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("❌ Upload failed：" + data.error);
+                } else {
+                    alert("✅ " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("❌ Error occurred while uploading：" + error);
+            });
+        });
+
+        function fetchResults() {
+            fetch('/results')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("results").textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                alert("❌ Failed to obtain analysis results：" + error);
+            });
+        }
+
+        function generateUML() {
+            const umlType = document.getElementById("umlType").value;
+            fetch(`/generate_uml?type=${umlType}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("❌ Generate UML failed!");
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    document.getElementById("umlImage").src = URL.createObjectURL(blob);
+                    alert("✅ UML picture generated successfully!");
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
+        }
+        function downloadUML() {
+        window.location.href = "/download_uml";
+        }
+        function downloadPUML() {
+            window.location.href = "/download_puml";
+        }
+    </script>
+
+</body>
+</html>

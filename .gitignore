@@ -1,0 +1,16 @@
+# Python 編譯暫存檔
+__pycache__/
+*.pyc
+
+# AI 分析輸出圖檔與 PUML
+output.png
+output.puml
+
+# 使用者上傳資料
+uploads/
+
+# OpenAI 金鑰
+.env
+
+# VS Code 設定檔（可選）
+.vscode/
