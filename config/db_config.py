@@ -1,7 +1,8 @@
 import pymysql, os
-from dotenv import load_dotenv
 
-load_dotenv()  # 讀取本地 .env，部署時可以移除
+if os.getenv("RENDER") != "true":  # ✅ Render 環境自動設為 true
+    from dotenv import load_dotenv
+    load_dotenv() # 讀取本地 .env，部署時可以移除
 
 config = {
     'host': os.getenv('DB_HOST'),
