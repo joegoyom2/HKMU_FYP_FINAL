@@ -1,7 +1,9 @@
 import openai, os
-from dotenv import load_dotenv
 
-load_dotenv()
+if os.getenv("RENDER") != "true":  # ✅ Render 環境自動設為 true
+    from dotenv import load_dotenv
+    load_dotenv()
+    
 
 def get_openai():
     client = openai.AzureOpenAI(

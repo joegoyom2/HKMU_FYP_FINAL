@@ -85,6 +85,43 @@ def generate_uml():
             plantuml_lines.append("@enduml")
             plantuml_code = "\n".join(plantuml_lines)
             print("🧠 Cleaned PlantUML code:\n", plantuml_code)
+        elif uml_type == "use case":
+            cursor.execute("SELECT component_name, component_type FROM components")
+            components = [{"name": row["component_name"], "type": row["component_type"]} for row in cursor.fetchall()]
+            if not components:
+                return jsonify({"error": "❌ No components found"}), 500
+
+            cursor.execute("""
+                SELECT c1.component_name AS source_component, 
+                       c2.component_name AS target_component, 
+                       d.dependency_type
+                FROM componentdependencies d
+                JOIN components c1 ON d.source_component_id = c1.component_id
+                JOIN components c2 ON d.target_component_id = c2.component_id
+            """)
+            dependencies = [{"source": row["source_component"], "target": row["target_component"], "type": row["dependency_type"]}
+                            for row in cursor.fetchall()]
+            if not dependencies:
+                return jsonify({"error": "❌ Dependencies not found"}), 500
+
+            uml_data = {"components": components, "dependencies": dependencies}
+            print("🔍 JSON sent to AI for use case:\n", json.dumps(uml_data, indent=2))
+
+            prompt = f"""
+            Please generate a use case diagram in PlantUML format based on the following metadata.
+            - Assume actors such as 'User' or 'Admin' if needed.
+            - Group related use cases together.
+            - Use actor --> (use case) syntax.
+
+            JSON:
+            {json.dumps(uml_data, indent=2)}
+            """
+
+            plantuml_code = call_plantuml_ai(prompt)
+            if "@startuml" in plantuml_code and "@enduml" in plantuml_code:
+                between = plantuml_code.split("@startuml")[1].split("@enduml")[0].strip()
+                if not between:
+                    return jsonify({"error": "❌ AI returns an empty use case diagram. Please check the prompt or regenerate it."}), 400
 
         else:
             return jsonify({"error": f"Unknown UML type: {uml_type}"}), 400

@@ -1,14 +1,20 @@
-import pymysql
+import pymysql, os
+
+if os.getenv("RENDER") != "true":  # ✅ Render 環境自動設為 true
+    from dotenv import load_dotenv
+    load_dotenv() # 讀取本地 .env，部署時可以移除
 
 config = {
-    'host': '127.0.0.1',   # **確保使用 127.0.0.1 而不是 localhost**
-    'user': 'root',
-    'password': '24295151qQ!',  # **請確保密碼正確**
-    'database': 'cd_insight',
-    'port': 3307,         # **確保使用正確的 MySQL 連接埠**
-    'cursorclass': pymysql.cursors.DictCursor,  # **回傳 dict 格式**
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'port': int(os.getenv('DB_PORT', 3307)),
+    'cursorclass': pymysql.cursors.DictCursor,
     'autocommit': True
 }
+
+connection = pymysql.connect(**config)
 
 def db_connect():
     """ 建立 MySQL 連線 """
