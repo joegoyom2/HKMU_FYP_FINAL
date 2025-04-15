@@ -1,6 +1,6 @@
 import openai, os
 
-if os.getenv("RENDER") != "true":  # ✅ Render 環境自動設為 true
+if os.getenv("RENDER") != "true":
     from dotenv import load_dotenv
     load_dotenv()
     

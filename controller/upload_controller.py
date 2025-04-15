@@ -15,12 +15,10 @@ def handle_upload():
     if file.filename == "":
         return jsonify({"error": "No file selected"}), 400
 
-    # 儲存檔案
     file_path = os.path.join(UPLOAD_FILE, secure_filename(file.filename))
     file.save(file_path)
     print(f"✅ File {file.filename} saved to {file_path}")
 
-    # ✅ 把檔案路徑寫入一個本地檔案，供 class diagram 使用
     with open("latest_uploaded_path.txt", "w", encoding="utf-8") as f:
         f.write(file_path)
 
@@ -34,7 +32,7 @@ def handle_upload():
         print(f"❌ AI analysis failed: {analysis_result['error']}")
         return jsonify({"error": analysis_result["error"]}), 500
 
-    print("✅ AI 分析完成，準備儲存到 MySQL...")
+    print("✅ AI analysis completed, ready to be stored in MySQL...")
     db, cursor = db_connect()
     if not db:
         return jsonify({"error": "Unable to connect to MySQL"}), 500
@@ -69,7 +67,7 @@ def handle_upload():
                 insert_dependency(cursor, src_id, tgt_id, dtype)
 
         db.commit()
-        print("✅ MySQL 儲存成功")
+        print("✅ MySQL storage successful!")
         return jsonify({
             "message": f"✅ File {file.filename} uploaded, analyzed, and stored successfully!"
         }), 200

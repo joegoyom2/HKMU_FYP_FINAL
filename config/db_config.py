@@ -1,8 +1,8 @@
 import pymysql, os
 
-if os.getenv("RENDER") != "true":  # ✅ Render 環境自動設為 true
+if os.getenv("RENDER") != "true":
     from dotenv import load_dotenv
-    load_dotenv() # 讀取本地 .env，部署時可以移除
+    load_dotenv()
 
 config = {
     'host': os.getenv('DB_HOST'),
@@ -17,13 +17,13 @@ config = {
 connection = pymysql.connect(**config)
 
 def db_connect():
-    """ 建立 MySQL 連線 """
+    """ Establishing a MySQL connection """
     try:
-        print("🔹 嘗試使用 pymysql 連接 MySQL...")
+        print("🔹 Try connecting to MySQL using pymysql...")
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
-        print("✅ pymysql 連接 MySQL 成功！")
+        print("✅ pymysql connects to MySQL successfully！")
         return conn, cursor
     except pymysql.MySQLError as e:
-        print(f"❌ pymysql 連接 MySQL 失敗: {e}")
+        print(f"❌ pymysql fails to connect to MySQL: {e}")
         return None, None

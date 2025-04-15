@@ -1,14 +1,10 @@
-import os
-import json
-import traceback
-import subprocess
+import os, json, traceback, subprocess
 from flask import request, jsonify, send_file
 from config.config import PLANTUML_JAR_PATH
 from config.db_config import db_connect
 from service.ai_class_diagram import class_diagram_from_code
 from service.ai_code_analysis import call_plantuml_ai
 
-# ✅ 從文字檔讀取最新上傳檔案路徑
 def read_uploaded_path():
     try:
         with open("latest_uploaded_path.txt", "r", encoding="utf-8") as f:
@@ -25,7 +21,6 @@ def generate_uml():
 
     try:
         if uml_type == "sequence":
-            # 🔹 從資料庫取得 components 和 dependencies
             cursor.execute("SELECT component_name, component_type FROM components")
             components = [{"name": row["component_name"], "type": row["component_type"]} for row in cursor.fetchall()]
             if not components:
@@ -72,7 +67,6 @@ def generate_uml():
             if "error" in class_data:
                 return jsonify({"error": class_data["error"]}), 500
 
-            # ✅ 根據 class_data 組成 PlantUML 語法
             plantuml_lines = ["@startuml"]
             for cls in class_data.get("classes", []):
                 plantuml_lines.append(f"class {cls['class_name']} {{")
@@ -126,7 +120,6 @@ def generate_uml():
         else:
             return jsonify({"error": f"Unknown UML type: {uml_type}"}), 400
 
-        # 🔧 儲存 PUML 並執行 JAR 產圖
         output_puml = os.path.join(os.getcwd(), "output.puml")
         output_png = os.path.join(os.getcwd(), "output.png")
 

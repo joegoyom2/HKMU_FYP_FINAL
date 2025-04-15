@@ -1,7 +1,6 @@
 import json
 from config.ai_config import get_openai
 
-# 分析程式碼並取得元件與相依關係
 def ai_code_analysis(code: str) -> dict:
     prompt = f"""
     Analyze the following code and output ONLY valid JSON with:
@@ -46,8 +45,6 @@ def ai_code_analysis(code: str) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
-
-# 根據 prompt 回傳 PlantUML 程式碼（sequence diagram 用）
 def call_plantuml_ai(prompt: str) -> str:
     try:
         client = get_openai()
